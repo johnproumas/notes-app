@@ -27,6 +27,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
 
 const formSchema = z.object({
   email: z.email(),
@@ -52,6 +53,13 @@ export function SignUpForm({
     },
   });
 
+  const signInWithGoogle = async () => {
+    const data = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/dashboard",
+    });
+  };
+
   // 2. Define a submit handler.
   async function onSubmit(
     values: z.infer<typeof formSchema>
@@ -65,14 +73,16 @@ export function SignUpForm({
         toast.error("Passwords do not match");
         return;
       }
-      
+
       const response = await signUpUser(
         values.email,
         values.password,
         values.name
       );
       if (response.success) {
-        toast.success("Account created successfully! Please check your email for verification.");
+        toast.success(
+          "Account created successfully! Please check your email for verification."
+        );
       } else {
         toast.error(response.message);
       }
@@ -164,7 +174,9 @@ export function SignUpForm({
                     render={({ field }) => (
                       <FormItem>
                         <div className="flex items-center">
-                          <FormLabel>Confirm your password</FormLabel>
+                          <FormLabel>
+                            Confirm your password
+                          </FormLabel>
                         </div>
                         <FormControl>
                           <Input
@@ -193,6 +205,8 @@ export function SignUpForm({
                   <Button
                     variant="outline"
                     className="w-full"
+                    onClick={signInWithGoogle}
+                    type="button"
                   >
                     Signup with Google
                   </Button>

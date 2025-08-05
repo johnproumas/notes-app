@@ -56,30 +56,19 @@ export const createNote = async (
 // };
 
 export const getNoteById = async (id: string) => {
-  try {
-    const note = await db
-      .select()
-      .from(notes)
-      .where(eq(notes.id, id));
+    try {
+        const note = await db.query.notes.findFirst({
+            where: eq(notes.id, id),
+            with: {
+                notebook: true
+            }
+        });
 
-    if (note.length === 0) {
-      return {
-        success: false,
-        message: "Note not found",
-      };
+        return { success: true, note };
+    } catch {
+        return { success: false, message: "Failed to get notebook" };
     }
-
-    return {
-      success: true,
-      note,
-    };
-  } catch {
-    return {
-      success: false,
-      message: "Failed to retrieve note",
-    };
-  }
-}
+};
 
 export const updateNote = async (
   id: string,

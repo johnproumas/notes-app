@@ -15,7 +15,7 @@ interface PageWrapperProps {
   children: React.ReactNode;
   breadcrumbs: {
     label: string;
-    href: string;
+    href?: string;
   }[];
 }
 
@@ -26,12 +26,12 @@ export function PageWrapper({
   return (
     <div className="flex flex-col gap-4">
       <header className="flex items-center p-4 border-b">
-        <div className="flex items-center justify-between gap-4 w-full">
+        <div className="flex items-center gap-4 w-full">
           <SidebarTrigger />
           <Breadcrumb>
             <BreadcrumbList>
               {breadcrumbs.map((crumb, index) => (
-                <Fragment key={crumb.href}>
+                <Fragment key={index}>
                   <BreadcrumbItem>
                     <BreadcrumbLink href={crumb.href}>
                       {crumb.label}
@@ -45,7 +45,7 @@ export function PageWrapper({
             </BreadcrumbList>
           </Breadcrumb>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center ml-auto gap-4">
             <ModeToggle />
             <LogoutButton size="sm" />
           </div>

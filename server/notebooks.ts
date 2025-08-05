@@ -1,7 +1,11 @@
 "use server";
 
 import { db } from "@/db/drizzle";
-import { InsertNotebook, notebooks } from "@/db/schema";
+import {
+  InsertNotebook,
+  notebooks,
+  notes,
+} from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
@@ -29,7 +33,7 @@ export const getNotebooks = async () => {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
-    const userId = session?.user.id;
+    const userId = session?.user?.id;
 
     if (!userId) {
       return {
@@ -38,10 +42,13 @@ export const getNotebooks = async () => {
       };
     }
 
-    const notebooksByUser = await db
-      .select()
-      .from(notebooks)
-      .where(eq(notebooks.userId, userId));
+    const notebooksByUser =
+      await db.query.notebooks.findMany({
+        where: eq(notebooks.userId, userId),
+        with: {
+          notes: true,
+        },
+      });
 
     return {
       success: true,
@@ -57,12 +64,14 @@ export const getNotebooks = async () => {
 
 export const getNotebookById = async (id: string) => {
   try {
-    const notebook = await db
-      .select()
-      .from(notebooks)
-      .where(eq(notebooks.id, id));
+    const notebook = await db.query.notebooks.findFirst({
+      where: eq(notebooks.id, id),
+      with: {
+        notes: true,
+      },
+    });
 
-    if (notebook.length === 0) {
+    if (!notebook) {
       return {
         success: false,
         message: "Notebook not found",
@@ -71,7 +80,7 @@ export const getNotebookById = async (id: string) => {
 
     return {
       success: true,
-      notebook: notebook[0],
+      notebook,
     };
   } catch {
     return {
@@ -79,7 +88,7 @@ export const getNotebookById = async (id: string) => {
       message: "Failed to retrieve notebook",
     };
   }
-}
+};
 
 export const updateNotebook = async (
   id: string,
